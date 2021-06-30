@@ -453,3 +453,17 @@ A Dockerfile for building the container image yourself is located in `build/pack
 ```
 $ docker build -t $IMAGE_NAME -f build/package/docker/Dockerfile .
 ```
+
+## Components 
+- pkg : Includes watcher, signaller, controller
+- .github : github action CI pipeline configuration
+- build/package/docker : Dockerfile build the controller which includes varnish in it
+- chart : Helm chart to deploy this controller to k8s easily
+
+## What is Watcher?
+
+## What is Controller?
+
+## what is signaller?
+
+## what is cmd/kube-httpcache/main.go?
