@@ -15,14 +15,14 @@ import (
 func (b *Signaller) Run() error {
 	server := &http.Server{
 		Addr:    b.Address + ":" + strconv.Itoa(b.Port),
-		Handler: b,
+		Handler: b, // Not sure How this Handler is working
 	}
 
 	for i := 0; i < b.WorkersCount; i++ {
-		go b.ProcessSignalQueue()
+		go b.ProcessSignalQueue() // goroutine making a request outta signal channel
 	}
 
-	return server.ListenAndServe()
+	return server.ListenAndServe() // listen from server
 }
 
 func (b *Signaller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +59,7 @@ func (b *Signaller) ProcessSignalQueue() {
 	client := &http.Client{}
 
 	for signal := range b.signalQueue {
-		response, err := client.Do(signal.Request)
+		response, err := client.Do(signal.Request) // Make a request and get a response
 		if err != nil {
 			glog.Errorf("singal broadcast error: %v", err.Error())
 			glog.Infof("retring in %v", b.RetryBackoff)
@@ -72,6 +72,7 @@ func (b *Signaller) ProcessSignalQueue() {
 			glog.V(5).Infof("recieved a signal response from %s: %+v", response.Request.URL.Host, response)
 		}
 
+		// after reading all the response, still leftover? -> error
 		if response != nil {
 			if err := response.Body.Close(); err != nil {
 				glog.Error("error on closing response body:", err)
@@ -81,11 +82,11 @@ func (b *Signaller) ProcessSignalQueue() {
 }
 
 func (b *Signaller) Retry(signal Signal) {
-	signal.Attempt++
-	if signal.Attempt < b.MaxRetries {
+	signal.Attempt++                   // add up the attempt number
+	if signal.Attempt < b.MaxRetries { // as far as the attempt number is smaller than the maxretry number
 		go func() {
-			time.Sleep(b.RetryBackoff)
-			b.signalQueue <- signal
+			time.Sleep(b.RetryBackoff) // sleep it for retrybackoff duration
+			b.signalQueue <- signal    // add a new signal into a channel
 		}()
 	}
 }

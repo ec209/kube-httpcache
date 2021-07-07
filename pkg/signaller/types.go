@@ -8,6 +8,7 @@ import (
 	"github.com/mittwald/kube-httpcache/pkg/watcher"
 )
 
+// Defines a http request object and the number of attempt
 type Signal struct {
 	Request *http.Request
 	Attempt int
