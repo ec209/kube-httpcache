@@ -8,11 +8,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// Endpoint include name host(IP) port and probe
+// EndpointConfig includes the list of endpoints and a primary endpoint out of that
 type EndpointConfig struct {
 	Endpoints EndpointList
 	Primary   *Endpoint
 }
 
+// Construct an empty EndpointConfig
 func NewEndpointConfig() *EndpointConfig {
 	return &EndpointConfig{
 		Endpoints: []Endpoint{},
@@ -21,7 +24,8 @@ func NewEndpointConfig() *EndpointConfig {
 }
 
 type EndpointWatcher struct {
-	client      kubernetes.Interface
+	// looks like following for are variables related to service
+	client      kubernetes.Interface // Reference: https://github.com/kubernetes/client-go/blob/6711973af1c55d544f08252297ebf6dab2031975/kubernetes/clientset.go#L72
 	namespace   string
 	serviceName string
 	portName    string

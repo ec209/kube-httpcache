@@ -14,6 +14,7 @@ func (t *fsnotifyTemplateWatcher) Run() (chan []byte, chan error) {
 	return updates, errors
 }
 
+// a function to watch filesystem change, then read that file and push it to updates channel
 func (t *fsnotifyTemplateWatcher) watch(updates chan []byte, errors chan error) {
 	for ev := range t.watcher.Events {
 		glog.V(6).Infof("observed %s event on %s", ev.String(), ev.Name)
