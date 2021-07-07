@@ -37,15 +37,16 @@ func (b *Signaller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	b.mutex.RLock()
 	endpoints := make([]watcher.Endpoint, len(b.endpoints.Endpoints))
-	copy(endpoints, b.endpoints.Endpoints)
+	copy(endpoints, b.endpoints.Endpoints) // why is it copying endpoints?
 	b.mutex.RUnlock()
 
 	for _, endpoint := range endpoints {
 		url := fmt.Sprintf("%s://%s:%s%s", b.EndpointScheme, endpoint.Host, endpoint.Port, r.RequestURI)
-		request, err := http.NewRequest(r.Method, url, bytes.NewReader(body))
+		request, err := http.NewRequest(r.Method, url, bytes.NewReader(body)) // Method eg (GET), URL of the endpoint. With those variables make a new http request
 		if err != nil {
 			b.errors <- err
 		}
+		//fill up http request as such and puth it in a channel
 		request.Header = r.Header.Clone()
 		request.Host = r.Host
 		request.Header.Set("X-Forwarded-For", r.RemoteAddr)
