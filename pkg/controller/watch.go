@@ -18,36 +18,36 @@ func (v *VarnishController) watchConfigUpdates(ctx context.Context, c *exec.Cmd,
 		i++
 
 		select {
-		case tmplContents := <-v.vclTemplateUpdates:
+		case tmplContents := <-v.vclTemplateUpdates: // templateupdates channel got a new item
 			glog.Infof("VCL template was updated")
 
-			tmpl, err := template.New("vcl").Parse(string(tmplContents))
+			tmpl, err := template.New("vcl").Parse(string(tmplContents)) // make a new VCL out of the item
 			if err != nil {
 				errors <- err
 				continue
 			}
 
-			v.vclTemplate = tmpl
+			v.vclTemplate = tmpl // assign that to varnishController struct
 
 			errors <- v.rebuildConfig(ctx, i)
 
-		case newConfig := <-v.frontendUpdates:
+		case newConfig := <-v.frontendUpdates: // frontend channel got a new item
 			glog.Infof("received new frontend configuration: %+v", newConfig)
 
-			v.frontend = newConfig
+			v.frontend = newConfig // update the frontend of varnishController
 
 			if v.varnishSignaller != nil {
-				v.varnishSignaller.SetEndpoints(v.frontend)
+				v.varnishSignaller.SetEndpoints(v.frontend) // update the frontend in the signaller object
 			}
 
 			errors <- v.rebuildConfig(ctx, i)
 
-		case newConfig := <-v.backendUpdates:
+		case newConfig := <-v.backendUpdates: // backend channel got a new item
 			glog.Infof("received new backend configuration: %+v", newConfig)
 
-			v.backend = newConfig
+			v.backend = newConfig // update the backend of varnishController
 
-			errors <- v.rebuildConfig(ctx, i)
+			errors <- v.rebuildConfig(ctx, i) // basically rebuild varnishController with an updated backend
 
 		case <-ctx.Done():
 			errors <- ctx.Err()
@@ -79,12 +79,12 @@ func (v *VarnishController) rebuildConfig(ctx context.Context, i int) error {
 
 	configname := fmt.Sprintf("k8s-upstreamcfg-%d", i)
 
-	err = client.DefineInlineVCL(ctx, configname, vcl, varnishclient.VCLStateAuto)
+	err = client.DefineInlineVCL(ctx, configname, vcl, varnishclient.VCLStateAuto) // DefineInlineVCL compiles and loads a new VCL file with the file contents
 	if err != nil {
 		return err
 	}
 
-	err = client.UseVCL(ctx, configname)
+	err = client.UseVCL(ctx, configname) // UseVCL make Varnish switch to the specified configuration file immediately
 	if err != nil {
 		return err
 	}
@@ -93,6 +93,7 @@ func (v *VarnishController) rebuildConfig(ctx context.Context, i int) error {
 		v.currentVCLName = "boot"
 	}
 
+	//SetVCLState can be used to force a loaded VCL file to a specific state. not sure what VCL cold state, but looks to change the state
 	if err := client.SetVCLState(ctx, v.currentVCLName, varnishclient.VCLStateCold); err != nil {
 		glog.V(1).Infof("error while changing state of VCL %s: %s", v.currentVCLName, err)
 	}

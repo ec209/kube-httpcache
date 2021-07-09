@@ -100,6 +100,7 @@ func getEnvironment() map[string]string {
 	return items
 }
 
+// This function writes stuff to the target which is an io.writer
 func (v *VarnishController) renderVCL(target io.Writer, frontendList watcher.EndpointList, primaryFrontend *watcher.Endpoint, backendList watcher.EndpointList, primaryBackend *watcher.Endpoint) error {
 	err := v.vclTemplate.Execute(target, &TemplateData{
 		Frontends:       frontendList,
